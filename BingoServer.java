@@ -13,21 +13,19 @@ import java.util.Stack;
 
 public class BingoServer {
 	
-	private static HashMap<Integer, Socket> MasterSocket = null;
-	public static ArrayList<String> rooms = null;
+	
 	private final int Sport = 5566; 
 	private ServerSocket server;
 	
 	public static void main(String args[]){
+		
 		new BingoServer().run();
 	}
 	public BingoServer(){
 		try {
+			
 			server = new ServerSocket(Sport);
-			if(rooms == null)
-				rooms = new ArrayList<String>();
-			if(MasterSocket == null)
-				MasterSocket = new HashMap<Integer, Socket>();
+			
 		} catch(BindException e){
 			System.out.println("Port is been used !");
 		} catch (IOException e) {
@@ -46,25 +44,7 @@ public class BingoServer {
 			}
 		}
 	}
-	private static final class UniqNumberGen{
-		private UniqNumberGen(){};
-		private static int number = 0;
-		private static Stack<Integer> mStack = null;
-		public static int GenNumber(){
-			synchronized (mStack) {
-				if(mStack == null)mStack = new Stack<Integer>();
-				if(mStack.isEmpty())return number++;
-				return mStack.pop();
-			}
-		}
-		public static void StoreNumber(int i) throws ArithmeticException{
-			synchronized (mStack) {
-				if(mStack == null)mStack = new Stack<Integer>();
-				if(i < 0) throw new ArithmeticException();
-				else mStack.push(Integer.valueOf(i));
-			}
-		}
-	}
+
 	private class BingoHandle extends Thread {
 		private Socket guest;
 		
@@ -81,46 +61,52 @@ public class BingoServer {
 				System.out.println(Thread.currentThread().getName()+" is closed !");
 			}
 		}
+//		Message format, always two lines
+//		signal\r\n
+//		data\r\n
+//			QUERY : Time ?
+//			CREATE : UserName RoomName Grid
+//			CONNECT : Index
+//		Room store format
+//			UserName RoomName Grid Index
 		private void handleMessage() throws IOException{
-			BufferedReader in;
-			in = new BufferedReader(new InputStreamReader(guest.getInputStream()));
+			PrintWriter pw = new PrintWriter(guest.getOutputStream());
+			BufferedReader in = new BufferedReader(new InputStreamReader(guest.getInputStream()));
 			int signal = Integer.valueOf(in.readLine());
+			
 			switch(signal){
 			case BingoSignal.QUERY:
-				PrintWriter pw = new PrintWriter(guest.getOutputStream());
 				//Begin signal
 				pw.println("Q_START");
 				pw.flush();
-				synchronized (BingoServer.rooms){
-					for(String room : BingoServer.rooms)
-						pw.println(room);
-				}
+				for(String room : Room.getRooms())
+					pw.println(room);
 				//Ending signal
 				pw.println("Q_DONE");
 				pw.flush();
-				pw.close();
-				pw = null;
+				
 				//send back
 				break;
 			case BingoSignal.CREATE:
-				//add info to room
-				int num = UniqNumberGen.GenNumber();
-				//s = name room_name grid number
-				synchronized (rooms) {
-					String s = in.readLine();
-					rooms.add(s + " " + num);
-				}
+				int index = Room.addRoom(in.readLine(), guest);
+				pw.println("Q_OK " + String.valueOf(index));
 				break;
 			case BingoSignal.CONNECT:
 				//send to both
-				new HandleGame(guest, find Socket);
-;				break;
+				int mIndex = Integer.valueOf(in.readLine());
+				new HandleGame(guest, Room.getRoomMaster(mIndex)).start();
+				new HandleGame(Room.getRoomMaster(mIndex), guest).start();
+				break;
 			default:
 				//garbage
 				break;
 			}
+			
 			in.close();
 			in = null;
+			pw.close();
+			pw = null;
 		}
 	}
+
 }
