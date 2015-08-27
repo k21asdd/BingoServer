@@ -84,7 +84,6 @@ public class BingoServer {
 				//Ending signal
 				pw.println("Q_DONE");
 				pw.flush();
-				
 				//send back
 				break;
 			case BingoSignal.CREATE:
