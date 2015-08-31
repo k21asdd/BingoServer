@@ -16,7 +16,7 @@ public class HandleGame extends Thread{
 		this.master = master;
 		in = new BufferedReader(new InputStreamReader(master.getInputStream()));
 		out = new PrintWriter(guest.getOutputStream());
-		out.println("Q_CONNECT");
+		out.println(BingoSignal.CONNECT);
 		out.flush();
 	}
 	@Override
@@ -37,12 +37,14 @@ public class HandleGame extends Thread{
 			out.println("Q_DISCONNECT");
 			out.flush();
 			System.out.println(master.getPort()+" : close");
-			master.close();
-			master = null;
 			in.close();
 			in = null;
 			out.close();
 			out = null;
+			master.close();
+			master = null;
+			guest.close();
+			guest = null;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -53,7 +55,7 @@ public class HandleGame extends Thread{
 		out.println(data);
 		out.flush();
 		System.out.println("Send to "+guest.getPort());
-		if(signal == BingoSignal.CLOSE){
+		if(signal == BingoSignal.TEARDOWN){
 			String s = in.readLine();
 			if(s.equals("Q_CLOSE"))
 				this.interrupt();

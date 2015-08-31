@@ -37,7 +37,7 @@ public class BingoServer {
 		while(server != null){
 			try {
 				Socket client = server.accept();
-				new BingoHandle(client).start();
+				new BingoDispatch(client).start();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -45,11 +45,11 @@ public class BingoServer {
 		}
 	}
 
-	private class BingoHandle extends Thread {
-		private Socket guest;
+	private class BingoDispatch extends Thread {
+		private Socket client;
 		
-		public BingoHandle(Socket guest) throws IOException{
-			this.guest = guest;
+		public BingoDispatch(Socket guest) throws IOException{
+			this.client = guest;
 			
 		}
 		public void run(){
@@ -70,13 +70,12 @@ public class BingoServer {
 //		Room store format
 //			UserName RoomName Grid Index
 		private void handleMessage() throws IOException{
-			PrintWriter pw = new PrintWriter(guest.getOutputStream());
-			BufferedReader in = new BufferedReader(new InputStreamReader(guest.getInputStream()));
+			BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
 			int signal = Integer.valueOf(in.readLine());
-			
 			switch(signal){
-			case BingoSignal.QUERY:
+			case BingoSignal.QUERY:{
 				//Begin signal
+				PrintWriter pw = new PrintWriter(client.getOutputStream());
 				pw.println("Q_START");
 				pw.flush();
 				for(String room : Room.getRooms())
@@ -86,16 +85,32 @@ public class BingoServer {
 				pw.flush();
 				//send back
 				break;
-			case BingoSignal.CREATE:
-				int index = Room.addRoom(in.readLine(), guest);
-				pw.println("Q_OK " + String.valueOf(index));
+			}
+			case BingoSignal.CREATE:{
+				new HandleCreate(client).start(); 
 				break;
-			case BingoSignal.CONNECT:
+			}
+			case BingoSignal.CONNECT:{
 				//send to both
 				int mIndex = Integer.valueOf(in.readLine());
-				new HandleGame(guest, Room.getRoomMaster(mIndex)).start();
-				new HandleGame(Room.getRoomMaster(mIndex), guest).start();
+				ServerSocket nServer = new ServerSocket(0);
+				Socket player1,player2;
+				pw.println(BingoSignal.CONNECT);
+				pw.println(nServer.getLocalPort());
+				pw.flush();
+				pw.close();
+				pw = new PrintWriter(Room.getRoomMaster(mIndex).getOutputStream());
+				pw.println(BingoSignal.CONNECT);
+				pw.println(nServer.getLocalPort());
+				pw.flush();
+				System.out.println("Start connect");
+				player1 = nServer.accept();
+				player2 = nServer.accept();
+				new HandleGame(player1, player2).start();
+				new HandleGame(player2, player1).start();
+				System.out.println("End connect");
 				break;
+			}
 			default:
 				//garbage
 				break;
@@ -105,7 +120,9 @@ public class BingoServer {
 			in = null;
 			pw.close();
 			pw = null;
+			guest.close();
 		}
 	}
+	private class 
 
 }
