@@ -11,72 +11,54 @@ import java.util.Stack;
 import Server.HandleCreate.Pair;
 
 public final class Room {
-	private static ArrayList<HandleCreate.Pair> PairArr = new ArrayList<HandleCreate.Pair>();
-	private static ArrayList<String> rooms =  new ArrayList<String>();
+	private static ArrayList<Room> GameRooms = new ArrayList<Room>();
 	private static Stack<Integer> mStack = new Stack<Integer>();
+	private HandleGame mHandleGame;
+	private String RoomInfo;
+	private boolean GameStart = false;
 	
-	private Room(){}
-	public synchronized static int addRoom(String s, HandleCreate.Pair p) throws IOException{
+	private Room(HandleCreate.Pair creator, String info){
+		mHandleGame = new HandleGame(creator);
+		RoomInfo = info;
+	}
+	private String getRoomInfo(){
+			return RoomInfo;
+	}
+	public void addParticipant(HandleCreate.Pair guest){
+		mHandleGame.addParticipant(guest);
+	}
+	public void GameRoomStart(){
+		GameStart = true;
+		mHandleGame.start();
+	}
+	private void deleteSelf(){
+		if(GameStart)
+			mHandleGame.finish();
+		mHandleGame = null;
+	}
+	public static String[] getRoomsInfo(){
+		synchronized (GameRooms) {
+			String [] data = new String[GameRooms.size()];
+			for(int i = 0 ; i < GameRooms.size() ; i++)
+				data[i] = GameRooms.get(i).getRoomInfo();
+			return data;
+		}
+	}
+	public synchronized static int addRoom(String info, HandleCreate.Pair creator) throws IOException{
 		int index;
 		if(mStack.isEmpty()){
-			index = rooms.size();
-			rooms.add(s + " " + rooms.size());
-			PairArr.add(p);
+			index = GameRooms.size();
+			GameRooms.add(new Room(creator, info + " " + index));
 		}
 		else{
 			index = mStack.pop();
-			rooms.add(index, s + " " + index);
-			PairArr.add(index, p);
+			GameRooms.add(index, new Room(creator, info + " " + index));
 		}
 		return index;
 	}
 	public synchronized static void removeRoom(int index){
-		rooms.set(index, null);
-		PairArr.set(index, null);
+		GameRooms.get(index).deleteSelf();
+		GameRooms.set(index, null);
 		mStack.push(Integer.valueOf(index));
-	}
-	public synchronized static HandleCreate.Pair getRoomMaster(int index){
-		return PairArr.get(index);
-	}
-	public synchronized static String[] getRooms(){
-		return rooms.toArray(new String[rooms.size()]);
-	}
-	public class ControlSignal extends Thread{
-		Socket guest;
-		private BufferedReader in;
-		private PrintWriter out;
-		private boolean wait;
-		public ControlSignal(Socket g) throws IOException {
-			// TODO Auto-generated constructor stub
-			guest = g;
-			in = new BufferedReader(new InputStreamReader(guest.getInputStream()));
-			out = new PrintWriter(guest.getOutputStream());
-			out.println(BingoSignal.CREATE);
-			out.flush();
-			wait = true;
-		}
-		@Override
-		public void run() {
-			// TODO Auto-generated method stub
-			while(wait){
-				try {
-					switch(Integer.valueOf(in.readLine())){
-						case BingoSignal.TEARDOWN:
-							wait = false;
-							break;
-						default:
-							break;
-					}
-				} catch (NumberFormatException | IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
-		//called by CONNECT condition
-		public void finsish(){
-			wait = false;
-			this.interrupt();
-		}
 	}
 }
