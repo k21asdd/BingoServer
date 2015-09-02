@@ -76,10 +76,11 @@ public class BingoServer {
 			case BingoSignal.QUERY:{
 				//Begin signal
 				PrintWriter pw = new PrintWriter(client.getOutputStream());
+				for(String info: Room.getRoomsInfo())
+					pw.println(info);
 				pw.println("Q_START");
 				pw.flush();
-				for(String room : Room.getRooms())
-					pw.println(room);
+				
 				//Ending signal
 				pw.println("Q_DONE");
 				pw.flush();
@@ -89,6 +90,10 @@ public class BingoServer {
 			case BingoSignal.CREATE:{
 				new HandleCreate(client).start(); 
 				break;
+			}
+			case BingoSignal.TEARDOWN :{
+				int index = Integer.valueOf(in.readLine());
+				Room.removeRoom(index);
 			}
 			case BingoSignal.CONNECT:{
 				//send to both
