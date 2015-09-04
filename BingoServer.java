@@ -7,9 +7,6 @@ import java.io.PrintWriter;
 import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Stack;
 
 public class BingoServer {
 	
@@ -71,51 +68,53 @@ public class BingoServer {
 //			UserName RoomName Grid Index
 		private void handleMessage() throws IOException{
 			BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+			PrintWriter pw = new PrintWriter(client.getOutputStream());
+			System.out.println(Thread.currentThread().getName()+" Wait for Signal");
 			int signal = Integer.valueOf(in.readLine());
 			switch(signal){
-			case BingoSignal.QUERY:{
+			case BingoSignal.QUERY:
 				//Begin signal
-				PrintWriter pw = new PrintWriter(client.getOutputStream());
-				for(String info: Room.getRoomsInfo())
-					pw.println(info);
-				pw.println("Q_START");
-				pw.flush();
-				
-				//Ending signal
+				System.out.println(Thread.currentThread().getName()+" QUERY");
+				pw.println(BingoSignal.QUERY);
+				/*for(String info: Room.getRoomsInfo())
+					pw.println(info);*/
+				pw.println("AAA");
+				pw.println("BBB");
+				pw.println("CCC");
 				pw.println("Q_DONE");
 				pw.flush();
+				System.out.println(Thread.currentThread().getName()+" QUERY DONE");
+				//Ending signal
 				//send back
 				break;
-			}
 			case BingoSignal.CREATE:{
+				System.out.println(Thread.currentThread().getName()+" CREATE");
 				new HandleCreate(client).start(); 
+				System.out.println(Thread.currentThread().getName()+" CREATE DONE");
 				break;
 			}
 			case BingoSignal.TEARDOWN :{
+				System.out.println(Thread.currentThread().getName()+" TEARDOWN");
 				int index = Integer.valueOf(in.readLine());
 				Room.removeRoom(index);
+				pw.println(BingoSignal.TEARDOWN);
+				pw.flush();
+				System.out.println(Thread.currentThread().getName()+" TEARDOWN DONE");
 			}
 			case BingoSignal.CONNECT:{
 				//send to both
+				System.out.println(Thread.currentThread().getName()+" CONNECT");
 				int mIndex = Integer.valueOf(in.readLine());
 				ServerSocket nServer = new ServerSocket(0);
-				Socket player1,player2;
-				pw.println(BingoSignal.CONNECT);
-				pw.println(nServer.getLocalPort());
-				pw.flush();
-				pw.close();
-				pw = new PrintWriter(Room.getRoomMaster(mIndex).getOutputStream());
-				pw.println(BingoSignal.CONNECT);
-				pw.println(nServer.getLocalPort());
-				pw.flush();
-				System.out.println("Start connect");
-				player1 = nServer.accept();
-				player2 = nServer.accept();
-				new HandleGame(player1, player2).start();
-				new HandleGame(player2, player1).start();
-				System.out.println("End connect");
+				pw.println(nServer.getLocalPort()); pw.flush();
+				Socket participant = nServer.accept();
+				Pair guest = new Pair(participant, nServer);
+				new PrintWriter(Room.getRoom(mIndex).getCreator().getOutPutStream(), true).println(BingoSignal.CONNECT);
+				Room.getRoom(mIndex).addParticipant(guest);
+				Room.getRoom(mIndex).GameRoomStart();
+				System.out.println(Thread.currentThread().getName()+" CONNECT DONE");
 				break;
-			}
+			} 
 			default:
 				//garbage
 				break;
@@ -125,9 +124,6 @@ public class BingoServer {
 			in = null;
 			pw.close();
 			pw = null;
-			guest.close();
 		}
 	}
-	private class 
-
 }

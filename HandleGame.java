@@ -2,18 +2,23 @@ package Server;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.Socket;
 
 public class HandleGame extends Thread{
-	private HandleCreate.Pair Player1, Player2;
+	private Pair Player1, Player2;
 	private boolean isRunning = true;
-	public HandleGame(HandleCreate.Pair creator){
+	public HandleGame(Pair creator){
 		Player1 = creator;
 	}
-	public void addParticipant(HandleCreate.Pair guest){
+	public Pair getCreator(){
+		return Player1;
+	}
+	public void addParticipant(Pair guest){
 		Player2 = guest;
+	}
+	public void deleteParticipant(){
+		if(Player2 == null)return;
+		Player2 = null;
 	}
 	public void finish(){
 		isRunning = false;
@@ -47,7 +52,7 @@ public class HandleGame extends Thread{
 	private class MsgDeliver extends Thread{
 		BufferedReader in;
 		PrintWriter out;
-		public MsgDeliver(HandleCreate.Pair p1, HandleCreate.Pair p2) throws IOException{
+		public MsgDeliver(Pair p1, Pair p2) throws IOException{
 			in = new BufferedReader(p1.getInputStreamReader());
 			out = new PrintWriter(p2.getOutPutStream());
 		}
