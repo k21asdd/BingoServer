@@ -70,7 +70,8 @@ public class BingoServer {
 			BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
 			PrintWriter pw = new PrintWriter(client.getOutputStream());
 			System.out.println(Thread.currentThread().getName()+" Wait for Signal");
-			int signal = Integer.valueOf(in.readLine());
+			String ss = in.readLine();
+			int signal = Integer.valueOf(ss);
 			switch(signal){
 			case BingoSignal.QUERY:
 				//Begin signal
@@ -78,9 +79,9 @@ public class BingoServer {
 				pw.println(BingoSignal.QUERY);
 				/*for(String info: Room.getRoomsInfo())
 					pw.println(info);*/
-				pw.println("AAA");
-				pw.println("BBB");
-				pw.println("CCC");
+				pw.println("AAA Bian 7*7");
+				pw.println("BBB Aiai 5*5");
+				pw.println("CCC Bian 3*3");
 				pw.println("Q_DONE");
 				pw.flush();
 				System.out.println(Thread.currentThread().getName()+" QUERY DONE");
@@ -88,6 +89,7 @@ public class BingoServer {
 				//send back
 				break;
 			case BingoSignal.CREATE:{
+				System.out.println(ss);
 				System.out.println(Thread.currentThread().getName()+" CREATE");
 				new HandleCreate(client).start(); 
 				System.out.println(Thread.currentThread().getName()+" CREATE DONE");
@@ -100,6 +102,7 @@ public class BingoServer {
 				pw.println(BingoSignal.TEARDOWN);
 				pw.flush();
 				System.out.println(Thread.currentThread().getName()+" TEARDOWN DONE");
+				break;
 			}
 			case BingoSignal.CONNECT:{
 				//send to both
@@ -117,13 +120,10 @@ public class BingoServer {
 			} 
 			default:
 				//garbage
+				System.out.println(ss);
 				break;
 			}
-			
-			in.close();
-			in = null;
-			pw.close();
-			pw = null;
+
 		}
 	}
 }
