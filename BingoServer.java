@@ -22,7 +22,9 @@ public class BingoServer {
 		try {
 			
 			server = new ServerSocket(Sport);
-			
+			Room.addRoom("AAA Bian 7*7", null);
+			Room.addRoom("BBB Aiai 5*5", null);
+			Room.addRoom("CCC Bian 3*3", null);
 		} catch(BindException e){
 			System.out.println("Port is been used !");
 		} catch (IOException e) {
@@ -79,12 +81,13 @@ public class BingoServer {
 				pw.println(BingoSignal.QUERY);
 				/*for(String info: Room.getRoomsInfo())
 					pw.println(info);*/
-				pw.println("AAA Bian 7*7");
-				pw.println("BBB Aiai 5*5");
-				pw.println("CCC Bian 3*3");
+				for(String s : Room.getRoomsInfo())
+					pw.println(s);
 				pw.println("Q_DONE");
 				pw.flush();
 				System.out.println(Thread.currentThread().getName()+" QUERY DONE");
+				for(String s : Room.getRoomsInfo())
+					System.out.println(s);
 				//Ending signal
 				//send back
 				break;
@@ -97,6 +100,8 @@ public class BingoServer {
 			}
 			case BingoSignal.TEARDOWN :{
 				System.out.println(Thread.currentThread().getName()+" TEARDOWN");
+				for(String s : Room.getRoomsInfo())
+					System.out.println(s);
 				int index = Integer.valueOf(in.readLine());
 				Room.removeRoom(index);
 				pw.println(BingoSignal.TEARDOWN);
