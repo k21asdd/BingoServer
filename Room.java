@@ -51,8 +51,12 @@ public final class Room {
 	public static String[] getRoomsInfo(){
 		synchronized (GameRooms) {
 			String [] data = new String[GameRooms.size()];
-			for(int i = 0 ; i < GameRooms.size() ; i++)
-				data[i] = GameRooms.get(i).getRoomInfo();
+			for(int i = 0 ; i < GameRooms.size() ; i++){
+				if(GameRooms.get(i) != null)
+					data[i] = GameRooms.get(i).getRoomInfo();
+				else
+					data[i] = "";
+			}
 			return data;
 		}
 	}
@@ -72,6 +76,7 @@ public final class Room {
 		return index;
 	}
 	public synchronized static void removeRoom(int index){
+		if(GameRooms.get(index) == null) return;
 		GameRooms.get(index).deleteSelf();
 		GameRooms.set(index, null);
 		mStack.push(Integer.valueOf(index));

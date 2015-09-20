@@ -25,12 +25,16 @@ public class Pair{
 	}
 	public boolean isReady() throws IOException{
 		BufferedReader in = new BufferedReader(new InputStreamReader(nClient.getInputStream()));
-		return Integer.valueOf(in.readLine()) == BingoSignal.GAME_READY;
+		String s = in.readLine();
+		System.out.println(s);
+		return Integer.valueOf(s) == BingoSignal.GAME_READY;
 	}
 	public InputStreamReader getInputStreamReader() throws IOException{
+		System.out.println("In "+nClient.getLocalPort());
 		return new InputStreamReader(nClient.getInputStream());
 	}
 	public OutputStream getOutPutStream() throws IOException{
+		System.out.println("Out "+nClient.getLocalPort());
 		return nClient.getOutputStream();
 	}
 }

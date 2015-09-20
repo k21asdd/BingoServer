@@ -11,7 +11,7 @@ import java.net.Socket;
 public class BingoServer {
 	
 	
-	private final int Sport = 5566; 
+	private final int Sport = 55166; 
 	private ServerSocket server;
 	
 	public static void main(String args[]){
@@ -22,9 +22,6 @@ public class BingoServer {
 		try {
 			
 			server = new ServerSocket(Sport);
-			Room.addRoom("AAA Bian 7*7", null);
-			Room.addRoom("BBB Aiai 5*5", null);
-			Room.addRoom("CCC Bian 3*3", null);
 		} catch(BindException e){
 			System.out.println("Port is been used !");
 		} catch (IOException e) {
@@ -92,7 +89,6 @@ public class BingoServer {
 				//send back
 				break;
 			case BingoSignal.CREATE:{
-				System.out.println(ss);
 				System.out.println(Thread.currentThread().getName()+" CREATE");
 				new HandleCreate(client).start(); 
 				System.out.println(Thread.currentThread().getName()+" CREATE DONE");
@@ -116,9 +112,10 @@ public class BingoServer {
 				ServerSocket nServer = new ServerSocket(0);
 				pw.println(nServer.getLocalPort()); pw.flush();
 				Socket participant = nServer.accept();
+				System.out.println(Thread.currentThread().getName()+" ACCEPT");
 				Pair guest = new Pair(participant, nServer);
-				new PrintWriter(Room.getRoom(mIndex).getCreator().getOutPutStream(), true).println(BingoSignal.CONNECT);
 				Room.getRoom(mIndex).addParticipant(guest);
+				System.out.println(Thread.currentThread().getName()+" GUEST");
 				Room.getRoom(mIndex).GameRoomStart();
 				System.out.println(Thread.currentThread().getName()+" CONNECT DONE");
 				break;

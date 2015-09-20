@@ -37,13 +37,8 @@ public class HandleGame extends Thread{
 		// TODO Auto-generated method stub
 		System.out.println(Thread.currentThread().getName()+" is started !");
 		try {
-			if( ! (Player1.isReady() && Player2.isReady()) ){
-				System.out.println("CONNECT failed !");
-				return;
-			}else{
 				new MsgDeliver(Player1, Player2).start();
 				new MsgDeliver(Player2, Player1).start();
-			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -61,11 +56,12 @@ public class HandleGame extends Thread{
 			// TODO Auto-generated method stub
 			try{
 				while(isRunning){
-					out.println(in.readLine());
+					String s = in.readLine();
+					if(s.isEmpty())isRunning = false;
+					System.out.println(this.getName() + " " + s);
+					out.println(s);
 					out.flush();
 				}
-				in.close();
-				out.close();
 			} catch (IOException e){
 				e.printStackTrace();
 				return;
