@@ -35,7 +35,6 @@ public class HandleGame extends Thread{
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
-		System.out.println(Thread.currentThread().getName()+" is started !");
 		try {
 				new MsgDeliver(Player1, Player2).start();
 				new MsgDeliver(Player2, Player1).start();
@@ -55,15 +54,18 @@ public class HandleGame extends Thread{
 		public void run() {
 			// TODO Auto-generated method stub
 			try{
+				System.out.println("MsgDeliver "+Thread.currentThread().getName()+" is started !");
 				while(isRunning){
 					String s = in.readLine();
-					if(s.isEmpty())isRunning = false;
+					//null means client socket is close ?
+					if(s == null) isRunning = false;
 					System.out.println(this.getName() + " " + s);
 					out.println(s);
 					out.flush();
 				}
+				System.out.println("MsgDeliver "+Thread.currentThread().getName()+" is down !");
 			} catch (IOException e){
-				e.printStackTrace();
+				System.out.println(Thread.currentThread().getName() + ": socket close");
 				return;
 			}
 			super.run();
