@@ -20,7 +20,6 @@ public class BingoServer {
 	}
 	public BingoServer(){
 		try {
-			
 			server = new ServerSocket(Sport);
 		} catch(BindException e){
 			System.out.println("Port is been used !");
@@ -60,9 +59,10 @@ public class BingoServer {
 //		Message format, always two lines
 //		signal\r\n
 //		data\r\n
-//			QUERY : Time ?
-//			CREATE : UserName RoomName Grid
+//			QUERY : 
+//			CREATE : RoomName UserName Grid
 //			CONNECT : Index
+//			TEARDOWN : Index
 //		Room store format
 //			UserName RoomName Grid Index
 		private void handleMessage() throws IOException{
